@@ -1,13 +1,9 @@
-"use client"
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
-import Image from "next/image"
-import Link from "next/link"
-
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-
-export default function LoginPage() {
+export default function SignUp() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <main className="flex flex-1">
@@ -16,7 +12,7 @@ export default function LoginPage() {
         </div>
         <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
           <div className="w-full max-w-md space-y-8">
-            <h2 className="text-3xl font-bold text-center text-gray-900">Đăng Nhập</h2>
+            <h2 className="text-3xl font-bold text-center text-gray-900">Đăng Ký</h2>
             <form className="space-y-6">
               <div className="space-y-2">
                 <Input
@@ -36,29 +32,26 @@ export default function LoginPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 />
               </div>
-              <div className="text-right">
-                <Link href="#" className="text-sm text-purple-600 hover:underline">
-                  Quên mật khẩu?
-                </Link>
+              <div className="space-y-2">
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  placeholder="Xác nhận mật khẩu"
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
               </div>
-              <Button type="submit" className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-md">
-                Đăng nhập
+              <Button className="w-full bg-red-500 hover:bg-red-600" type="submit">
+                Đăng ký
               </Button>
             </form>
             <div className="text-center text-sm text-gray-500">Hoặc</div>
             <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md">
               Đăng nhập bằng facebook
             </Button>
-            <div className="text-center text-sm">
-              Bạn chưa có tài khoản?{" "}
-              <Link href="#" className="text-red-500 hover:underline">
-                Đăng ký
-              </Link>
             </div>
           </div>
-        </div>
       </main>
     </div>
-  )
+  );
 }
-
