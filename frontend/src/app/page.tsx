@@ -1,8 +1,11 @@
 import React from 'react'
 import Hero from '@/components/Hero'
-
+import LatestUpdates from '@/components/Latest-Update'
 export default function HomePage() {
   return (
-    <Hero />
+    <div>
+      <Hero />
+      <LatestUpdates />
+    </div>
   )
 }

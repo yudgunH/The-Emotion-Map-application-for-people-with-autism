@@ -1,7 +1,8 @@
+
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"; // Import Card từ shadcn
-
+import InfoCard from "@/components/Info-card";
 export default function Page() {
   return (
     <div className="min-h-screen bg-background">
@@ -19,48 +20,29 @@ export default function Page() {
       </div>
 
       {/* Main Content */}
-      <main className="container mx-auto max-w-5xl py-12">
-        <h2 className="text-3xl font-bold text-center mb-12">Chúng Tôi Có Gì?</h2>
+      <main className="container mx-auto max-w-5xl py-20">
+        <h2 className="text-3xl font-bold text-center mb-20">Chúng Tôi Có Gì?</h2>
 
         <div className="grid md:grid-cols-3 gap-8">
-          {/* Card for Service Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Theo dõi và phát triển</CardTitle>
-              <CardDescription>
-                EmoCare cung cấp những hỗ trợ hiệu quả cho trẻ em tự kỷ và các rối loạn về phát triển như ADHD, chậm phát triển và các vấn đề tâm lý khác.
-              </CardDescription>
-            </CardHeader>
-            <CardFooter>
-              <Button variant="link" className="p-0">Tìm hiểu thêm →</Button>
-            </CardFooter>
-          </Card>
+          <InfoCard 
+            title="Theo dõi và phát triển" 
+            description="EmoCare cung cấp những bộ câu hỏi được các Hiệp hội y khoa khuyến cáo rộng rãi như ASQ®-3, M-CHAT-R, PSC, CSHQ để theo dõi sự phát triển của trẻ và phát hiện sớm các nguy cơ rối loạn phát triển." 
+            link="#"
+          />
 
-          {/* Card for Resources Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Thực hiện kiểm tra</CardTitle>
-              <CardDescription>
-                EmyCare đưa ra các bài kiểm tra giúp bạn đánh giá được cảm xúc của bản thân.
-              </CardDescription>
-            </CardHeader>
-            <CardFooter>
-              <Button variant="link" className="p-0">Tìm hiểu thêm →</Button>
-            </CardFooter>
-          </Card>
+          <InfoCard 
+            title="Hỗ trợ tư vấn sớm" 
+            description="EmoCare sẽ hỗ trợ bạn trong việc tư vấn sớm và chăm sóc trẻ em của mình thông qua các bài viết, video hướng dẫn và các chuyên gia tư vấn."
+            link="#"
+          />
 
-          {/* Card for Education Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Kết Nối Với Cộng Đồng</CardTitle>
-              <CardDescription>
-                Educare trở giúp bạn kết nối với các chuyên gia, gia đình và cộng đồng, giúp bạn nhận được sự hỗ trợ từ người thân thiết.
-              </CardDescription>
-            </CardHeader>
-            <CardFooter>
-              <Button variant="link" className="p-0">Tìm hiểu thêm →</Button>
-            </CardFooter>
-          </Card>
+          <InfoCard 
+            title="Kết nối cộng đồng" 
+            description="EmoCare giúp bạn kết nối với cộng đồng cha mẹ khắp cả nước, chia sẻ kinh nghiệm và học hỏi từ những người khác." 
+            link="#"
+          />
+          
+
         </div>
 
         {/* Illustrations */}
