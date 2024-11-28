@@ -3,7 +3,7 @@
 
 import { useState } from "react"
 import Image from 'next/image'
-
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Switch } from "@/components/ui/switch"
 
@@ -14,7 +14,9 @@ const Header = () => {
   return (
     <header className="w-full flex justify-between items-center p-4 border-b">
       <div className="flex items-center">
-        <Image src="/logo.png" alt="Logo" width={100} height={100} />
+        <Link href="/">
+          <Image src="/logo.png" alt="Logo" width={100} height={100} />
+        </Link>
       </div>
       <div className="flex items-center gap-4">
         <span>Chế Độ Màu</span>
@@ -27,8 +29,12 @@ const Header = () => {
               />
               <span className="text-xs font-medium text-purple-600">{isDynamic ? 'Động' : 'Trầm'}</span>
             </div>
-        <Button variant="outline">Đăng Nhập</Button>
-        <Button>Đăng Ký</Button>
+        <Link href="/login">
+          <Button variant="outline">Đăng Nhập</Button>
+        </Link>
+        <Link href="/register">
+          <Button>Đăng Ký</Button>
+        </Link>
       </div>
     </header>
   )

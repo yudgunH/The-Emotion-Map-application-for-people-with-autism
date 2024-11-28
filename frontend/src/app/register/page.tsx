@@ -2,7 +2,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
+import Link from "next/link";
 export default function SignUp() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -45,10 +45,13 @@ export default function SignUp() {
                 Đăng ký
               </Button>
             </form>
-            <div className="text-center text-sm text-gray-500">Hoặc</div>
-            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md">
-              Đăng nhập bằng facebook
-            </Button>
+            <div className="text-center text-sm">
+              Bạn đã có tài khoản?{" "}
+              <Link href="/login" className="text-red-500 hover:underline">
+                Đăng nhập
+              </Link>
+            </div>
+            
             </div>
           </div>
       </main>

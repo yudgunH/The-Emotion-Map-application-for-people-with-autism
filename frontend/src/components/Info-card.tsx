@@ -6,20 +6,21 @@ interface InfoCardProps {
   title: string;
   description: string;
   link: string;
+  color?: string; 
 }
 
-export default function InfoCard({ title, description, link }: InfoCardProps) {
+export default function InfoCard({ title, description, link, color = "bg-red-500" }: InfoCardProps) {
+
+  const textColor = color.includes("white") || color.includes("yellow") ? "text-gray-800" : "text-white";
+
   return (
-    <
-      Card className="max-w-md overflow-hidden border-none shadow-lg">
-      {/* Custom curved header */}
-      <CardHeader className="relative bg-red-500 text-white p-4 rounded-t-xl">
+    <Card className="max-w-md overflow-hidden border-none shadow-lg rounded-b-3xl">
+      <CardHeader className={`relative ${color} ${textColor} p-4 rounded-t-3xl`}>
         <div className="flex items-center gap-2">
           <h3 className="text-xl font-medium">{title}</h3>
           <Rocket className="w-5 h-5" />
         </div>
-        {/* Curved bottom edge */}
-        <div className="absolute -bottom-4 left-0 right-0 h-4 bg-red-500">
+        <div className={`absolute -bottom-4 left-0 right-0 h-4 ${color}`}>
           <div className="absolute bottom-0 left-0 right-0 h-4 bg-[#FFF5F5] rounded-t-[100%]" />
         </div>
       </CardHeader>
@@ -38,3 +39,4 @@ export default function InfoCard({ title, description, link }: InfoCardProps) {
     </Card>
   )
 }
+

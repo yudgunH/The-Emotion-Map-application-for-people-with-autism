@@ -45,13 +45,10 @@ export default function LoginPage() {
                 Đăng nhập
               </Button>
             </form>
-            <div className="text-center text-sm text-gray-500">Hoặc</div>
-            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md">
-              Đăng nhập bằng facebook
-            </Button>
+            
             <div className="text-center text-sm">
               Bạn chưa có tài khoản?{" "}
-              <Link href="#" className="text-red-500 hover:underline">
+              <Link href="/register" className="text-red-500 hover:underline">
                 Đăng ký
               </Link>
             </div>

@@ -24,25 +24,24 @@ export default function Page() {
         <h2 className="text-3xl font-bold text-center mb-20">Chúng Tôi Có Gì?</h2>
 
         <div className="grid md:grid-cols-3 gap-8">
-          <InfoCard 
-            title="Theo dõi và phát triển" 
-            description="EmoCare cung cấp những bộ câu hỏi được các Hiệp hội y khoa khuyến cáo rộng rãi như ASQ®-3, M-CHAT-R, PSC, CSHQ để theo dõi sự phát triển của trẻ và phát hiện sớm các nguy cơ rối loạn phát triển." 
-            link="#"
+          <InfoCard
+            title="Theo dõi và phát triển"
+            description="EmoCare cung cấp những bộ câu hỏi được các Hiệp hội y khoa khuyến cáo rộng rãi như ASQ®-3, M-CHAT-R, PSC, CSHQ để theo dõi sự phát triển của trẻ và phát hiện sớm các nguy cơ rối loạn phát triển."
+            link="/info1"
+            color="bg-red-500"
           />
-
-          <InfoCard 
-            title="Hỗ trợ tư vấn sớm" 
+          <InfoCard
+            title="Hỗ trợ tư vấn sớm"
             description="EmoCare sẽ hỗ trợ bạn trong việc tư vấn sớm và chăm sóc trẻ em của mình thông qua các bài viết, video hướng dẫn và các chuyên gia tư vấn."
-            link="#"
+            link="/info2"
+            color="bg-yellow-500"
           />
-
-          <InfoCard 
-            title="Kết nối cộng đồng" 
-            description="EmoCare giúp bạn kết nối với cộng đồng cha mẹ khắp cả nước, chia sẻ kinh nghiệm và học hỏi từ những người khác." 
-            link="#"
+          <InfoCard
+            title="Kết nối cộng đồng"
+            description="EmoCare giúp bạn kết nối với cộng đồng cha mẹ khắp cả nước, chia sẻ kinh nghiệm và học hỏi từ những người khác."
+            link="/info3"
+            color="bg-blue-500"
           />
-          
-
         </div>
 
         {/* Illustrations */}

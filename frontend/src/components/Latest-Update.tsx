@@ -56,7 +56,7 @@ export default function LatestUpdates() {
           <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
             <iframe
               className="w-full h-full"
-              src="https://www.youtube.com/embed/your-video-id"
+              src="https://www.youtube.com/watch?v=-xDHRhAl69U&ab_channel=H%C6%B0ngNguy%E1%BB%85nDuy"
               title="Educational Video"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
