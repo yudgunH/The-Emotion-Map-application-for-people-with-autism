@@ -1,5 +1,5 @@
 import { Rocket } from 'lucide-react'
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import Link from "next/link"
 
 interface InfoCardProps {
@@ -14,28 +14,26 @@ export default function InfoCard({ title, description, link, color = "bg-red-500
   const textColor = color.includes("white") || color.includes("yellow") ? "text-gray-800" : "text-white";
 
   return (
-    <Card className="max-w-md overflow-hidden border-none shadow-lg rounded-b-3xl">
-      <CardHeader className={`relative ${color} ${textColor} p-4 rounded-t-3xl`}>
-        <div className="flex items-center gap-2">
-          <h3 className="text-xl font-medium">{title}</h3>
-          <Rocket className="w-5 h-5" />
-        </div>
+    <Card className="overflow-hidden border-none shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col min-h-[250px]">
+      <CardHeader className={`relative ${color} ${textColor} p-4`}>
+        <h3 className="text-lg font-medium leading-6">{title}</h3>
         <div className={`absolute -bottom-4 left-0 right-0 h-4 ${color}`}>
-          <div className="absolute bottom-0 left-0 right-0 h-4 bg-[#FFF5F5] rounded-t-[100%]" />
+          <div className="absolute bottom-0 left-0 right-0 h-4 bg-white rounded-t-[100%]" />
         </div>
       </CardHeader>
-      
-      <CardContent className="pt-6 pb-4 px-4 bg-[#FFF5F5]">
-        <p className="text-gray-800 mb-4 leading-relaxed">
+      <CardContent className="flex-grow pt-6 px-4 bg-white">
+        <p className="text-gray-600 text-sm leading-relaxed">
           {description}
         </p>
+      </CardContent>
+      <CardFooter className="bg-white pt-0 pb-4 px-4">
         <Link 
           href={link}
-          className="text-gray-600 hover:text-gray-800 transition-colors inline-flex items-center"
+          className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 transition-colors"
         >
-          Tìm hiểu thêm -&gt;
+          Tìm hiểu thêm →
         </Link>
-      </CardContent>
+      </CardFooter>
     </Card>
   )
 }
