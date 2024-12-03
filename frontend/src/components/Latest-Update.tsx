@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 
 export default function LatestUpdates() {
   return (
-    <div className="bg-gray-100 rounded-3xl p-8 md:p-12">
+    <div className="bg-gray-100 rounded-custom-1 p-8 md:p-12">
       <div className="max-w-6xl mx-auto">
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
