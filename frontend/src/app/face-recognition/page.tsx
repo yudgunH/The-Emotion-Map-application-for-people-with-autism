@@ -1,5 +1,5 @@
-// pages/face-recognition.tsx
 'use client';
+
 import React, { useRef, useEffect, useState } from 'react';
 
 interface FacialDb {
@@ -14,12 +14,11 @@ interface AnalysisResult {
 }
 
 const FaceRecognitionPage: React.FC = () => {
-  const facialRecognitionModel = process.env.NEXT_PUBLIC_FACE_RECOGNITION_MODEL || "Facenet";
-  const faceDetector = process.env.NEXT_PUBLIC_DETECTOR_BACKEND || "opencv";
-  const distanceMetric = process.env.NEXT_PUBLIC_DISTANCE_METRIC || "cosine";
-
+  const facialRecognitionModel = process.env.NEXT_PUBLIC_FACE_RECOGNITION_MODEL || 'Facenet';
+  const faceDetector = process.env.NEXT_PUBLIC_DETECTOR_BACKEND || 'opencv';
+  const distanceMetric = process.env.NEXT_PUBLIC_DISTANCE_METRIC || 'cosine';
   const serviceEndpoint = process.env.NEXT_PUBLIC_SERVICE_ENDPOINT;
-  const antiSpoofing = process.env.NEXT_PUBLIC_ANTI_SPOOFING === "1";
+  const antiSpoofing = process.env.NEXT_PUBLIC_ANTI_SPOOFING === '1';
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -35,8 +34,8 @@ const FaceRecognitionPage: React.FC = () => {
     const loadFacialDb = async () => {
       const envVarsWithPrefix: FacialDb = {};
       for (const key in process.env) {
-        if (key.startsWith("NEXT_PUBLIC_USER_")) {
-          envVarsWithPrefix[key.replace("NEXT_PUBLIC_USER_", "")] = process.env[key] as string;
+        if (key.startsWith('NEXT_PUBLIC_USER_')) {
+          envVarsWithPrefix[key.replace('NEXT_PUBLIC_USER_', '')] = process.env[key] as string;
         }
       }
       return envVarsWithPrefix;
@@ -63,14 +62,14 @@ const FaceRecognitionPage: React.FC = () => {
           video.srcObject = stream;
           await video.play();
         } catch (err) {
-          console.error("Error accessing webcam: ", err);
+          console.error('Error accessing webcam: ', err);
         }
       };
       getVideo();
     }
   }, []);
 
-  const captureImage = (task: "verify" | "analyze") => {
+  const captureImage = (task: 'verify' | 'analyze') => {
     setIsVerified(null);
     setIdentity(null);
 
@@ -87,14 +86,14 @@ const FaceRecognitionPage: React.FC = () => {
       const base64Img = canvas.toDataURL('image/png');
       setBase64Image(base64Img);
 
-      if (base64Image === null || base64Image === "") {
+      if (base64Image === null || base64Image === '') {
         return;
       }
 
-      if (task === "verify") {
+      if (task === 'verify') {
         verify(base64Image);
         console.log(`verification result is ${isVerified} - ${identity}`);
-      } else if (task === "analyze") {
+      } else if (task === 'analyze') {
         analyze(base64Image);
       }
     }
@@ -203,7 +202,7 @@ const FaceRecognitionPage: React.FC = () => {
         minHeight: '100vh',
         textAlign: 'center',
         backgroundColor: '#282c34',
-        color: 'white'
+        color: 'white',
       }}
     >
       <header className="App-header">
@@ -212,10 +211,12 @@ const FaceRecognitionPage: React.FC = () => {
         {isVerified === false && <p style={{ color: 'red' }}>Not Verified</p>}
         {isAnalyzed === true && <p style={{ color: 'green' }}>{analysis.join()}</p>}
         <video ref={videoRef} style={{ width: '100%', maxWidth: '500px' }} />
-        <br /><br />
+        <br />
+        <br />
         <button onClick={() => captureImage('verify')}>Verify</button>
         <button onClick={() => captureImage('analyze')}>Analyze</button>
-        <br /><br />
+        <br />
+        <br />
         <canvas ref={canvasRef} style={{ display: 'none' }} />
       </header>
     </div>
