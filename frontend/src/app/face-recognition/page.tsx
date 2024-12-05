@@ -1,226 +1,105 @@
-'use client';
+"use client";
+import React, { useState } from "react";
+import axios from "axios";
 
-import React, { useRef, useEffect, useState } from 'react';
+const BASE_URL = "http://localhost:5005";
 
-interface FacialDb {
-  [key: string]: string;
-}
+const Home: React.FC = () => {
+  const [img, setImg] = useState<File | null>(null);
+  const [img1, setImg1] = useState<File | null>(null);
+  const [img2, setImg2] = useState<File | null>(null);
+  const [result, setResult] = useState<string>("");
 
-interface AnalysisResult {
-  age: number;
-  dominant_race: string;
-  dominant_gender: string;
-  dominant_emotion: string;
-}
-
-const FaceRecognitionPage: React.FC = () => {
-  const facialRecognitionModel = process.env.NEXT_PUBLIC_FACE_RECOGNITION_MODEL || 'Facenet';
-  const faceDetector = process.env.NEXT_PUBLIC_DETECTOR_BACKEND || 'opencv';
-  const distanceMetric = process.env.NEXT_PUBLIC_DISTANCE_METRIC || 'cosine';
-  const serviceEndpoint = process.env.NEXT_PUBLIC_SERVICE_ENDPOINT;
-  const antiSpoofing = process.env.NEXT_PUBLIC_ANTI_SPOOFING === '1';
-
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  const [base64Image, setBase64Image] = useState<string>('');
-  const [isVerified, setIsVerified] = useState<boolean | null>(null);
-  const [identity, setIdentity] = useState<string | null>(null);
-  const [isAnalyzed, setIsAnalyzed] = useState<boolean | null>(null);
-  const [analysis, setAnalysis] = useState<string[]>([]);
-  const [facialDb, setFacialDb] = useState<FacialDb>({});
-
-  useEffect(() => {
-    const loadFacialDb = async () => {
-      const envVarsWithPrefix: FacialDb = {};
-      for (const key in process.env) {
-        if (key.startsWith('NEXT_PUBLIC_USER_')) {
-          envVarsWithPrefix[key.replace('NEXT_PUBLIC_USER_', '')] = process.env[key] as string;
-        }
-      }
-      return envVarsWithPrefix;
-    };
-
-    const fetchFacialDb = async () => {
-      try {
-        const loadedFacialDb = await loadFacialDb();
-        setFacialDb(loadedFacialDb);
-      } catch (error) {
-        console.error('Error loading facial database:', error);
-      }
-    };
-
-    fetchFacialDb();
-  }, [facialDb]);
-
-  useEffect(() => {
-    let video = videoRef.current;
-    if (video) {
-      const getVideo = async () => {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-          video.srcObject = stream;
-          await video.play();
-        } catch (err) {
-          console.error('Error accessing webcam: ', err);
-        }
-      };
-      getVideo();
-    }
-  }, []);
-
-  const captureImage = (task: 'verify' | 'analyze') => {
-    setIsVerified(null);
-    setIdentity(null);
-
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    const context = canvas?.getContext('2d');
-
-    if (video && canvas && context) {
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      const base64Img = canvas.toDataURL('image/png');
-      setBase64Image(base64Img);
-
-      if (base64Image === null || base64Image === '') {
-        return;
-      }
-
-      if (task === 'verify') {
-        verify(base64Image);
-        console.log(`verification result is ${isVerified} - ${identity}`);
-      } else if (task === 'analyze') {
-        analyze(base64Image);
-      }
-    }
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setImage: (file: File | null) => void) => {
+    const file = e.target.files?.[0];
+    setImage(file || null);
   };
 
-  const verify = async (base64Image: string) => {
-    try {
-      for (const key in facialDb) {
-        const targetEmbedding = facialDb[key];
-
-        const requestBody = JSON.stringify({
-          model_name: facialRecognitionModel,
-          detector_backend: faceDetector,
-          distance_metric: distanceMetric,
-          align: true,
-          img1_path: base64Image,
-          img2_path: targetEmbedding,
-          enforce_detection: false,
-          anti_spoofing: antiSpoofing,
-        });
-
-        const response = await fetch(`${serviceEndpoint}/verify`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: requestBody,
-        });
-
-        const data = await response.json();
-
-        if (response.status !== 200) {
-          console.log(data.error);
-          setIsVerified(false);
-          return;
-        }
-
-        if (data.verified === true) {
-          setIsVerified(true);
-          setIsAnalyzed(false);
-          setIdentity(key);
-          break;
-        }
-      }
-
-      if (isVerified === null) {
-        setIsVerified(false);
-      }
-    } catch (error) {
-      console.error('Exception while verifying image:', error);
-    }
+  const convertFileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file); // Tự động thêm "data:image/...;base64,"
+    });
   };
 
-  const analyze = async (base64Image: string) => {
-    const result: string[] = [];
-    setIsAnalyzed(false);
+  const callApi = async (endpoint: string, payload: object) => {
     try {
-      const requestBody = JSON.stringify({
-        detector_backend: faceDetector,
-        align: true,
-        img_path: base64Image,
-        enforce_detection: false,
-        anti_spoofing: antiSpoofing,
-      });
-
-      const response = await fetch(`${serviceEndpoint}/analyze`, {
-        method: 'POST',
+      const response = await axios.post(`${BASE_URL}/${endpoint}`, payload, {
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: requestBody,
       });
-
-      const data = await response.json();
-
-      if (response.status !== 200) {
-        console.log(data.error);
-        return;
-      }
-
-      for (const instance of data.results) {
-        const summary = `${instance.age} years old ${instance.dominant_race} ${instance.dominant_gender} with ${instance.dominant_emotion} mood.`;
-        console.log(summary);
-        result.push(summary);
-      }
-
-      if (result.length > 0) {
-        setIsAnalyzed(true);
-        setIsVerified(null);
-        setAnalysis(result);
-      }
-    } catch (error) {
-      console.error('Exception while analyzing image:', error);
+      setResult(response.data); // Hiển thị kết quả trả về
+    } catch (error: any) {
+      setResult(`Error: ${error.message}`);
+      console.error("Error details:", error);
     }
-    return result;
+  };
+
+  const handleRepresent = async () => {
+    if (!img) return alert("Please upload an image for represent.");
+    const imgBase64 = await convertFileToBase64(img);
+    const payload = {
+      img: imgBase64, // Định dạng đúng yêu cầu của API
+      model_name: "VGG-Face",
+      detector_backend: "opencv",
+    };
+    await callApi("represent", payload);
+  };
+
+  const handleVerify = async () => {
+    if (!img1 || !img2) return alert("Please upload both images for verification.");
+    const img1Base64 = await convertFileToBase64(img1);
+    const img2Base64 = await convertFileToBase64(img2);
+    const payload = {
+      img1: img1Base64,
+      img2: img2Base64,
+      model_name: "VGG-Face",
+      detector_backend: "opencv",
+    };
+    await callApi("verify", payload);
+  };
+
+  const handleAnalyze = async () => {
+    if (!img) return alert("Please upload an image for analysis.");
+    const imgBase64 = await convertFileToBase64(img);
+    const payload = {
+      img: imgBase64,
+      detector_backend: "opencv",
+    };
+    await callApi("analyze", payload);
   };
 
   return (
-    <div
-      className="App"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh',
-        textAlign: 'center',
-        backgroundColor: '#282c34',
-        color: 'white',
-      }}
-    >
-      <header className="App-header">
-        <h1>DeepFace React App</h1>
-        {isVerified === true && <p style={{ color: 'green' }}>Verified. Welcome {identity}</p>}
-        {isVerified === false && <p style={{ color: 'red' }}>Not Verified</p>}
-        {isAnalyzed === true && <p style={{ color: 'green' }}>{analysis.join()}</p>}
-        <video ref={videoRef} style={{ width: '100%', maxWidth: '500px' }} />
-        <br />
-        <br />
-        <button onClick={() => captureImage('verify')}>Verify</button>
-        <button onClick={() => captureImage('analyze')}>Analyze</button>
-        <br />
-        <br />
-        <canvas ref={canvasRef} style={{ display: 'none' }} />
-      </header>
+    <div style={{ padding: "20px" }}>
+      <h1>DeepFace API Demo</h1>
+      <div>
+        <h3>Represent</h3>
+        <input type="file" onChange={(e) => handleFileChange(e, setImg)} />
+        <button onClick={handleRepresent}>Submit</button>
+      </div>
+
+      <div>
+        <h3>Verify</h3>
+        <input type="file" onChange={(e) => handleFileChange(e, setImg1)} />
+        <input type="file" onChange={(e) => handleFileChange(e, setImg2)} />
+        <button onClick={handleVerify}>Submit</button>
+      </div>
+
+      <div>
+        <h3>Analyze</h3>
+        <input type="file" onChange={(e) => handleFileChange(e, setImg)} />
+        <button onClick={handleAnalyze}>Submit</button>
+      </div>
+
+      <div>
+        <h3>Result</h3>
+        <pre>{result}</pre>
+      </div>
     </div>
   );
 };
 
-export default FaceRecognitionPage;
+export default Home;
