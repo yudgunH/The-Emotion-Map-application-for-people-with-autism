@@ -50,17 +50,17 @@ export default function EmotionDetector() {
       })
 
       console.log("Response data:", response.data)
-      setResult(JSON.stringify(response.data, null, 2))
-
-      // Giả sử dữ liệu trả về không phải là mảng mà là object
-      if (response.data && response.data.dominant_emotion) {
-        const domEmotion = response.data.dominant_emotion.toLowerCase()
-        console.log("Dominant emotion:", domEmotion)
+      // API trả về một chuỗi thể hiện cảm xúc
+      // Ví dụ: "happy", "neutral", "surprise", "sad", "angry", "fear", "disgust"
+      if (response.data && typeof response.data === 'string') {
+        const domEmotion = response.data.toLowerCase()
         setEmotion(domEmotion)
         setShowGauge(true)
+        setResult(domEmotion) // Lưu lại kết quả trả về
       } else {
         setEmotion("neutral")
         setShowGauge(true)
+        setResult("Không xác định cảm xúc.")
       }
 
     } catch (error: any) {
@@ -102,7 +102,7 @@ export default function EmotionDetector() {
   }
 
   return (
-    <div className="max-w-md mx-auto p-4 space-y-4">
+    <div className="max-w-xl mx-auto p-4 space-y-4">
       <h1 className="text-xl font-semibold text-center">Kiểm tra cảm xúc</h1>
 
       <div className="relative aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
@@ -165,7 +165,7 @@ export default function EmotionDetector() {
               stroke={getColor(emotion)}
               strokeWidth={strokeWidth}
               strokeDasharray={circumference}
-              strokeDashoffset={circumference / 2} 
+              strokeDashoffset={circumference / 2}
               className="transition-all duration-500"
             />
           </svg>
