@@ -50,13 +50,13 @@ export default function EmotionDetector() {
       })
 
       console.log("Response data:", response.data)
-      // API trả về một chuỗi thể hiện cảm xúc
-      // Ví dụ: "happy", "neutral", "surprise", "sad", "angry", "fear", "disgust"
-      if (response.data && typeof response.data === 'string') {
-        const domEmotion = response.data.toLowerCase()
+      // API trả về một đối tượng JSON chứa emotion và advice
+      if (response.data && typeof response.data === 'object') {
+        const domEmotion = response.data.emotion.toLowerCase()
+        const adviceText = response.data.advice
         setEmotion(domEmotion)
         setShowGauge(true)
-        setResult(domEmotion) // Lưu lại kết quả trả về
+        setResult(adviceText) // Lưu lại lời khuyên từ API
       } else {
         setEmotion("neutral")
         setShowGauge(true)
@@ -186,7 +186,7 @@ export default function EmotionDetector() {
       )}
 
       <div className="mt-4">
-        <h3 className="text-lg font-semibold mb-2">Kết Quả Chi Tiết</h3>
+        <h3 className="text-lg font-semibold mb-2">Lời khuyên chi tiết</h3>
         {loading ? (
           <p className="text-center">Đang phân tích...</p>
         ) : (
