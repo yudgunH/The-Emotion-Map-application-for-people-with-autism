@@ -1,42 +1,26 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef } from 'react'
 import axios from 'axios'
 import Webcam from 'react-webcam'
-import { Camera, RefreshCw } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 
 const BASE_URL = "http://localhost:5005"
 
 export default function EmotionDetector() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
-  const [emotion, setEmotion] = useState<number>(0.5) // 0-1 scale for emotion
+  const [emotion, setEmotion] = useState<string>("neutral")
   const [loading, setLoading] = useState<boolean>(false)
   const [result, setResult] = useState<string>("")
+  const [showGauge, setShowGauge] = useState<boolean>(false)
   const webcamRef = useRef<Webcam>(null)
-
-  const callApi = async (endpoint: string, payload: object) => {
-    try {
-      const response = await axios.post(`${BASE_URL}/${endpoint}`, payload, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-      setResult(JSON.stringify(response.data, null, 2))
-      // Assuming the API returns an emotion score between 0 and 1
-      if (response.data.emotion && typeof response.data.emotion.score === 'number') {
-        setEmotion(response.data.emotion.score)
-      }
-    } catch (error: any) {
-      setResult(`Error: ${error.message}`)
-      console.error("Error details:", error)
-    }
-  }
 
   const handleCapture = () => {
     const imageSrc = webcamRef.current?.getScreenshot()
     if (imageSrc) {
       setCapturedImage(imageSrc)
+      setShowGauge(false)
     } else {
       alert("Không thể chụp ảnh. Vui lòng thử lại.")
     }
@@ -45,7 +29,8 @@ export default function EmotionDetector() {
   const handleRetake = () => {
     setCapturedImage(null)
     setResult("")
-    setEmotion(0.5)
+    setEmotion("neutral")
+    setShowGauge(false)
   }
 
   const handleAnalyze = async () => {
@@ -58,7 +43,26 @@ export default function EmotionDetector() {
         img: capturedImage,
         detector_backend: "opencv",
       }
-      await callApi("analyze", payload)
+      const response = await axios.post(`${BASE_URL}/analyze`, payload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      console.log("Response data:", response.data)
+      setResult(JSON.stringify(response.data, null, 2))
+
+      // Giả sử dữ liệu trả về không phải là mảng mà là object
+      if (response.data && response.data.dominant_emotion) {
+        const domEmotion = response.data.dominant_emotion.toLowerCase()
+        console.log("Dominant emotion:", domEmotion)
+        setEmotion(domEmotion)
+        setShowGauge(true)
+      } else {
+        setEmotion("neutral")
+        setShowGauge(true)
+      }
+
     } catch (error: any) {
       setResult(`Error: ${error.message}`)
       console.error("Error details:", error)
@@ -67,26 +71,40 @@ export default function EmotionDetector() {
     }
   }
 
-  // SVG gauge parameters
   const radius = 40
   const strokeWidth = 8
-  const normalizedValue = Math.min(Math.max(emotion, 0), 1)
   const circumference = 2 * Math.PI * radius
-  const arc = circumference * (normalizedValue - 0.5) // -0.5 to center the gauge
-  const rotation = -90 // Rotate to start from the bottom
 
-  // Color interpolation based on emotion value
-  const getColor = (value: number) => {
-    if (value < 0.3) return '#ef4444' // red
-    if (value < 0.7) return '#eab308' // yellow
-    return '#22c55e' // green
+  const getColor = (emotion: string) => {
+    switch (emotion) {
+      case 'happy': return '#22c55e'
+      case 'surprise': return '#3b82f6'
+      case 'neutral': return '#f59e0b'
+      case 'sad': return '#6b7280'
+      case 'angry': return '#ef4444'
+      case 'fear': return '#8b5cf6'
+      case 'disgust': return '#10b981'
+      default: return '#6b7280'
+    }
+  }
+
+  const getEmotionInfo = (emotion: string) => {
+    switch (emotion) {
+      case 'happy': return { emoji: '😊', text: 'Hạnh phúc' }
+      case 'neutral': return { emoji: '😐', text: 'Bình thường' }
+      case 'surprise': return { emoji: '😮', text: 'Ngạc nhiên' }
+      case 'sad': return { emoji: '😢', text: 'Buồn' }
+      case 'angry': return { emoji: '😠', text: 'Tức giận' }
+      case 'fear': return { emoji: '😨', text: 'Sợ hãi' }
+      case 'disgust': return { emoji: '🤢', text: 'Ghê tởm' }
+      default: return { emoji: '😐', text: 'Không xác định' }
+    }
   }
 
   return (
     <div className="max-w-md mx-auto p-4 space-y-4">
       <h1 className="text-xl font-semibold text-center">Kiểm tra cảm xúc</h1>
-      
-      {/* Camera/Preview Area */}
+
       <div className="relative aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
         {!capturedImage ? (
           <Webcam
@@ -105,7 +123,6 @@ export default function EmotionDetector() {
         )}
       </div>
 
-      {/* Controls */}
       <div className="flex justify-center space-x-2">
         {!capturedImage ? (
           <Button onClick={handleCapture} className="bg-primary hover:bg-primary/90">
@@ -113,14 +130,14 @@ export default function EmotionDetector() {
           </Button>
         ) : (
           <>
-            <Button 
-              onClick={handleAnalyze} 
+            <Button
+              onClick={handleAnalyze}
               disabled={loading}
               className="bg-green-500 hover:bg-green-600 text-white"
             >
               {loading ? "Đang phân tích..." : "Phân Tích Cảm Xúc"}
             </Button>
-            <Button 
+            <Button
               onClick={handleRetake}
               disabled={loading}
               variant="outline"
@@ -133,45 +150,41 @@ export default function EmotionDetector() {
         )}
       </div>
 
-      {/* Emotion Gauge */}
-      <div className="flex flex-col items-center space-y-2">
-        <svg width="100" height="60" className="transform -rotate-180">
-          <path
-            d={`M ${50 - radius}, 50 a ${radius},${radius} 0 1,1 ${radius * 2},0`}
-            fill="none"
-            stroke="#e5e7eb"
-            strokeWidth={strokeWidth}
-          />
-          <path
-            d={`M ${50 - radius}, 50 a ${radius},${radius} 0 1,1 ${radius * 2},0`}
-            fill="none"
-            stroke={getColor(normalizedValue)}
-            strokeWidth={strokeWidth}
-            strokeDasharray={circumference}
-            strokeDashoffset={circumference - arc}
-            className="transition-all duration-500"
-          />
-        </svg>
-        
-        {/* Emoji */}
-        <div className="text-3xl">
-          {emotion >= 0.7 ? '😊' : emotion >= 0.3 ? '😐' : '😢'}
-        </div>
+      {showGauge && (
+        <div className="flex flex-col items-center space-y-2">
+          <svg width="100" height="60" className="transform -rotate-180">
+            <path
+              d={`M ${50 - radius}, 50 a ${radius},${radius} 0 1,1 ${radius * 2},0`}
+              fill="none"
+              stroke="#e5e7eb"
+              strokeWidth={strokeWidth}
+            />
+            <path
+              d={`M ${50 - radius}, 50 a ${radius},${radius} 0 1,1 ${radius * 2},0`}
+              fill="none"
+              stroke={getColor(emotion)}
+              strokeWidth={strokeWidth}
+              strokeDasharray={circumference}
+              strokeDashoffset={circumference / 2} 
+              className="transition-all duration-500"
+            />
+          </svg>
 
-        {/* Status Text */}
-        <div className="text-center space-y-1">
-          <p className="font-medium">
-            {emotion >= 0.7 ? 'Cảm xúc bạn thật tích cực' : 
-             emotion >= 0.3 ? 'Cảm xúc bình thường' : 
-             'Cảm xúc tiêu cực'}
-          </p>
-          <p className="text-sm text-gray-600">
-            Chúc bạn một ngày tốt lành ❤️❤️❤️
-          </p>
-        </div>
-      </div>
+          <div className="text-5xl">
+            {getEmotionInfo(emotion).emoji}
+          </div>
 
-      {/* Results */}
+          <div className="text-center space-y-1">
+            <p className="font-medium text-lg">
+              {getEmotionInfo(emotion).text}
+            </p>
+            <p className="text-sm text-gray-600">
+              Cảm ơn bạn đã sử dụng ứng dụng của chúng tôi!
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="mt-4">
         <h3 className="text-lg font-semibold mb-2">Kết Quả Chi Tiết</h3>
         {loading ? (
@@ -185,4 +198,3 @@ export default function EmotionDetector() {
     </div>
   )
 }
-
