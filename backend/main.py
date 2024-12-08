@@ -7,7 +7,7 @@ from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 import speech_recognition as sr
 import numpy as np
-
+import time
 # project dependencies
 from deepface import DeepFace
 from deepface.commons import image_utils
@@ -86,18 +86,27 @@ def analyze():
 # Socket event để xử lý nhận dạng giọng nói
 @socketio.on('start_recognition')
 def handle_start_recognition():
-    try:
-        while True:
+    while True:
+        try:
             with sr.Microphone() as source:
                 print("Listening...")
-                audio = recognizer.listen(source)
+                # Điều chỉnh ngưỡng năng lượng để phát hiện âm thanh
+                recognizer.energy_threshold = 300  # Tùy chỉnh ngưỡng phù hợp với môi trường
+                recognizer.pause_threshold = 1  # Khoảng thời gian phát hiện dừng nói (mặc định là 0.8 giây)
+                
+                # Lắng nghe và ghi nhận âm thanh
+                audio = recognizer.listen(source, timeout=None)
+
+                # Thêm thời gian chờ sau khi người dùng dừng nói
+               # time.sleep(5)  # Chờ thêm 5 giây trước khi ngắt microphone
+
             text = recognizer.recognize_google(audio, language="vi-VN")
             print(text)
             emit('recognized_text', {'text': text})
-    except sr.UnknownValueError:
-        emit('recognized_text', {'text': "Sorry, I could not understand the audio."})
-    except sr.RequestError as e:
-        emit('recognized_text', {'text': f"Recognition service error: {e}"})
+        except sr.UnknownValueError:
+            emit('recognized_text', {'text': "Sorry, I could not understand the audio."})
+        except sr.RequestError as e:
+            emit('recognized_text', {'text': f"Recognition service error: {e}"})
 
 if __name__ == '__main__':
     socketio.run(app, debug=True, port=5005)
