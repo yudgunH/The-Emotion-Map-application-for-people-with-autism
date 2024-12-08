@@ -27,13 +27,13 @@ export default function Page() {
           <InfoCard
             title="Theo dõi và phát triển"
             description="EmoCare cung cấp những bộ câu hỏi được các Hiệp hội y khoa khuyến cáo rộng rãi như ASQ®-3, M-CHAT-R, PSC, CSHQ để theo dõi sự phát triển của trẻ và phát hiện sớm các nguy cơ rối loạn phát triển."
-            link="/info1"
+            link="/feature1"
             color="bg-red-500"
           />
           <InfoCard
             title="Hỗ trợ tư vấn sớm"
             description="EmoCare sẽ hỗ trợ bạn trong việc tư vấn sớm và chăm sóc trẻ em của mình thông qua các bài viết, video hướng dẫn và các chuyên gia tư vấn."
-            link="/info2"
+            link="/feature2"
             color="bg-yellow-500"
           />
           <InfoCard
