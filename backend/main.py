@@ -22,13 +22,20 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
 recognizer = sr.Recognizer()
 
-# Hàm gọi API ChatGPT để nhận gợi ý
+openai.api_key = "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"
+
 def chat_call(message):
-    openai.api_key = "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"
+
+    # Định nghĩa vai trò system
+    system_message = {
+        "role": "system",
+        "content": "Bạn là một trợ lý ảo giúp người dùng tự kỷ cải thiện kỹ năng giao tiếp. Hãy cung cấp hai gợi ý cụ thể và dễ thực hiện để người dùng có thể tiếp tục giao tiếp hiệu quả. Hãy đảm bảo rằng lời khuyên của bạn nhẹ nhàng, hỗ trợ và phù hợp với người dùng tự kỷ. (Vui lòng trả lời không quá 2 gạch đầu dòng)"
+    }
 
     response = openai.ChatCompletion.create(
         model="gpt-4o",  # Choose the GPT model
         messages=[
+            system_message,  # Thêm system vào đầu hội thoại
             {"role": "user", "content": message}
         ]
     )
@@ -75,13 +82,15 @@ def analyze():
             anti_spoofing=input_args.get("anti_spoofing", False),
         )
         dominant_emotion = demographies[0]['dominant_emotion']
-        message = f"Bạn là một trợ lý ảo giúp người dùng tự kỷ cải thiện kỹ năng giao tiếp. Người dùng đang giao tiếp với một người có cảm xúc {dominant_emotion}. Hãy cung cấp hai gợi ý cụ thể và dễ thực hiện để người dùng có thể tiếp tục giao tiếp hiệu quả. Hãy đảm bảo rằng lời khuyên của bạn nhẹ nhàng, hỗ trợ và phù hợp với người dùng tự kỷ. (Vui lòng trả lời không quá 2 gạch đầu dòng)"
+        message = f"Người dùng đang giao tiếp với một người có cảm xúc {dominant_emotion}"
         # advice = chat_call(message)
         print(dominant_emotion)
         return jsonify({"emotion": dominant_emotion}), 200
 
     except Exception as err:
         return {"exception": str(err)}, 500
+    
+
 
 # Socket event để xử lý nhận dạng giọng nói
 @socketio.on('start_recognition')
@@ -108,6 +117,42 @@ def handle_start_recognition():
             emit('recognized_text', {'text': "Sorry, I could not understand the audio."})
         except sr.RequestError as e:
             emit('recognized_text', {'text': f"Recognition service error: {e}"})
+
+
+
+conversations = {}
+
+@app.route("/chatbox", methods=["POST"])
+def chatbox():
+    try:
+        input_args = request.get_json() or request.form.to_dict()
+        user_id = input_args.get("user_id")  # Xác định người dùng
+        user_message = input_args.get("message")
+        
+        if not user_id or not user_message:
+            return {"error": "Both 'user_id' and 'message' are required."}, 400
+
+        if user_id not in conversations:
+            conversations[user_id] = [{"role": "system", "content": "Bạn là một trợ lý thân thiện giúp người dùng tự kỷ cải thiện giao tiếp."}]
+
+        conversations[user_id].append({"role": "user", "content": user_message})
+
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=conversations[user_id]
+        )
+        
+        reply = response['choices'][0]['message']['content']
+
+        conversations[user_id].append({"role": "assistant", "content": reply})
+        print(conversations[user_id])
+        return jsonify({"user_message": user_message, "reply": reply, "history": conversations[user_id]}), 200
+
+    except Exception as err:
+        return {"error": str(err)}, 500
+
+
+
 
 if __name__ == '__main__':
     socketio.run(app, debug=True, port=5005, use_reloader=False)
