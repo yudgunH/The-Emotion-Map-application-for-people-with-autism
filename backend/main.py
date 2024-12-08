@@ -18,7 +18,7 @@ import openai
 # Khởi tạo Flask app và SocketIO
 app = Flask(__name__)
 CORS(app, supports_credentials=True)  # Cho phép tất cả các nguồn truy cập
-socketio = SocketIO(app, cors_allowed_origins="*")  # Chỉ định nguồn được phép
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
 recognizer = sr.Recognizer()
 
@@ -104,9 +104,11 @@ def handle_start_recognition():
             print(text)
             emit('recognized_text', {'text': text})
         except sr.UnknownValueError:
+            print("Ko hieeur")
             emit('recognized_text', {'text': "Sorry, I could not understand the audio."})
         except sr.RequestError as e:
             emit('recognized_text', {'text': f"Recognition service error: {e}"})
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True, port=5005)
+    socketio.run(app, debug=True, port=5005, use_reloader=False)
+
