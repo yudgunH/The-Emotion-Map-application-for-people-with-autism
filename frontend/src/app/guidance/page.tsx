@@ -12,7 +12,7 @@ import {
 export default function InterventionGuidePage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <Link href="/feature1" className="flex items-center text-blue-600 hover:underline mb-6">
+      <Link href="/feature1" className="flex items-center text-red-600 hover:underline mb-6">
         <ArrowLeft className="mr-2" size={20} />
         Quay lại
       </Link>

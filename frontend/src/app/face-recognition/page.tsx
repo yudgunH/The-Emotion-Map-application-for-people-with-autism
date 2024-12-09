@@ -4,14 +4,9 @@ import React, { useState, useRef, useCallback } from 'react'
 import axios from 'axios'
 import Webcam from 'react-webcam'
 import { Button } from "@/components/ui/button"
+import { CameraIcon, FlipVerticalIcon as FlipCameraIcon } from 'lucide-react'
 import Chatbox from '@/components/Chatbox'
-
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5005"
-
-interface AnalyzeResponse {
-  emotion: string;
-  advice: string;
-}
+const BASE_URL = "http://localhost:5005"
 
 export default function EmotionDetector() {
   const [emotion, setEmotion] = useState<string>("neutral")
@@ -19,10 +14,10 @@ export default function EmotionDetector() {
   const [result, setResult] = useState<string>("")
   const [showGauge, setShowGauge] = useState<boolean>(false)
   const [isChatboxOpen, setIsChatboxOpen] = useState<boolean>(false)
-  const [isFrontCamera, setIsFrontCamera] = useState<boolean>(true)
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("user")
   const webcamRef = useRef<Webcam>(null)
 
-  const handleCaptureAndAnalyze = useCallback(async () => {
+  const handleCaptureAndAnalyze = async () => {
     const imageSrc = webcamRef.current?.getScreenshot()
     if (!imageSrc) {
       alert("Không thể chụp ảnh. Vui lòng thử lại.")
@@ -36,7 +31,7 @@ export default function EmotionDetector() {
         detector_backend: "opencv",
       }
 
-      const response = await axios.post<AnalyzeResponse>(`${BASE_URL}/analyze`, payload, {
+      const response = await axios.post(`${BASE_URL}/analyze`, payload, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -55,26 +50,18 @@ export default function EmotionDetector() {
         setResult("Không xác định cảm xúc.")
       }
     } catch (error: any) {
-      if (axios.isAxiosError(error)) {
-        setResult(`API Error: ${error.response?.data?.message || error.message}`)
-      } else {
-        setResult(`Unexpected Error: ${error.message}`)
-      }
+      setResult(`Error: ${error.message}`)
       console.error("Error details:", error)
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleCameraFlip = useCallback(() => {
+    setFacingMode(prevState => 
+      prevState === "user" ? "environment" : "user"
+    )
   }, [])
-
-  const toggleCamera = () => {
-    setIsFrontCamera((prev) => !prev)
-  }
-
-  const videoConstraints = {
-    facingMode: isFrontCamera ? "user" : "environment",
-    width: { ideal: 1280 },
-    height: { ideal: 720 },
-  }
 
   const radius = 40
   const strokeWidth = 8
@@ -116,9 +103,20 @@ export default function EmotionDetector() {
             audio={false}
             ref={webcamRef}
             screenshotFormat="image/png"
-            videoConstraints={videoConstraints}
+            videoConstraints={{
+              facingMode: facingMode,
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+            }}
             className="w-full h-full object-cover"
           />
+          <Button
+            onClick={handleCameraFlip}
+            className="absolute bottom-2 right-2 bg-white/50 hover:bg-white/75 text-black"
+            size="icon"
+          >
+            <FlipCameraIcon className="h-4 w-4" />
+          </Button>
         </div>
 
         <div className="flex justify-center space-x-2">
@@ -127,7 +125,14 @@ export default function EmotionDetector() {
             disabled={loading}
             className="bg-green-500 hover:bg-green-600 text-white"
           >
-            {loading ? "Đang phân tích..." : "Chụp Ảnh và Phân Tích"}
+            {loading ? (
+              "Đang phân tích..."
+            ) : (
+              <>
+                <CameraIcon className="mr-2 h-4 w-4" />
+                Chụp Ảnh và Phân Tích
+              </>
+            )}
           </Button>
           <Button
             onClick={() => setIsChatboxOpen(!isChatboxOpen)}
@@ -135,13 +140,6 @@ export default function EmotionDetector() {
             className="bg-stone-600 hover:bg-stone-700 text-white"
           >
             Hỗ trợ giao tiếp
-          </Button>
-          <Button
-            onClick={toggleCamera}
-            variant="outline"
-            className="bg-blue-500 hover:bg-blue-600 text-white"
-          >
-            Lật Camera
           </Button>
         </div>
 
@@ -196,74 +194,3 @@ export default function EmotionDetector() {
   )
 }
 
-// Separate EmotionGauge component for better readability and reusability
-interface EmotionGaugeProps {
-  emotion: string;
-}
-
-const EmotionGauge: React.FC<EmotionGaugeProps> = ({ emotion }) => {
-  const radius = 40;
-  const strokeWidth = 8;
-  const circumference = 2 * Math.PI * radius;
-
-  const getColor = (emotion: string) => {
-    switch (emotion) {
-      case 'happy': return '#22c55e';
-      case 'surprise': return '#3b82f6';
-      case 'neutral': return '#f59e0b';
-      case 'sad': return '#6b7280';
-      case 'angry': return '#ef4444';
-      case 'fear': return '#8b5cf6';
-      case 'disgust': return '#10b981';
-      default: return '#6b7280';
-    }
-  };
-
-  const getEmotionInfo = (emotion: string) => {
-    switch (emotion) {
-      case 'happy': return { emoji: '😊', text: 'Hạnh phúc' };
-      case 'neutral': return { emoji: '😐', text: 'Bình thường' };
-      case 'surprise': return { emoji: '😮', text: 'Ngạc nhiên' };
-      case 'sad': return { emoji: '😢', text: 'Buồn' };
-      case 'angry': return { emoji: '😠', text: 'Tức giận' };
-      case 'fear': return { emoji: '😨', text: 'Sợ hãi' };
-      case 'disgust': return { emoji: '🤢', text: 'Ghê tởm' };
-      default: return { emoji: '😐', text: 'Không xác định' };
-    }
-  };
-
-  return (
-    <div className="flex flex-col items-center space-y-2">
-      <svg width="100" height="60" className="transform -rotate-180">
-        <path
-          d={`M ${50 - radius}, 50 a ${radius},${radius} 0 1,1 ${radius * 2},0`}
-          fill="none"
-          stroke="#e5e7eb"
-          strokeWidth={strokeWidth}
-        />
-        <path
-          d={`M ${50 - radius}, 50 a ${radius},${radius} 0 1,1 ${radius * 2},0`}
-          fill="none"
-          stroke={getColor(emotion)}
-          strokeWidth={strokeWidth}
-          strokeDasharray={circumference}
-          strokeDashoffset={circumference / 2}
-          className="transition-all duration-500"
-        />
-      </svg>
-
-      <div className="text-5xl">
-        {getEmotionInfo(emotion).emoji}
-      </div>
-
-      <div className="text-center space-y-1">
-        <p className="font-medium text-lg">
-          {getEmotionInfo(emotion).text}
-        </p>
-        <p className="text-sm text-gray-600">
-          Cảm ơn bạn đã sử dụng ứng dụng của chúng tôi!
-        </p>
-      </div>
-    </div>
-  );
-};

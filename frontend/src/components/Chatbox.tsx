@@ -23,17 +23,8 @@ export default function Chatbox({ isOpen }: ChatboxProps) {
   const [isLoading, setIsLoading] = useState(false) // Trạng thái tải
   const scrollAreaRef = useRef<HTMLDivElement>(null)
 
-  // Tạo hoặc lấy user_id từ localStorage
-  const getUserId = () => {
-    let userId = localStorage.getItem('user_id')
-    if (!userId) {
-      userId = `user_${Date.now()}`
-      localStorage.setItem('user_id', userId)
-    }
-    return userId
-  }
-
-  const userId = getUserId()
+  // Đặt userId cố định là 1
+  const userId = 1;
 
   useEffect(() => {
     if (scrollAreaRef.current) {
