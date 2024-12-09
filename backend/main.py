@@ -85,7 +85,7 @@ def analyze():
         message = f"Người dùng đang giao tiếp với một người có cảm xúc {dominant_emotion}"
         advice = chat_call(message)
         print(dominant_emotion)
-        return jsonify({"emotion": dominant_emotion}), 200
+        return jsonify({"emotion": dominant_emotion, "advice": advice}), 200
 
     except Exception as err:
         return {"exception": str(err)}, 500
