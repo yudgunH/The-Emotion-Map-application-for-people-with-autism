@@ -83,7 +83,7 @@ def analyze():
         )
         dominant_emotion = demographies[0]['dominant_emotion']
         message = f"Người dùng đang giao tiếp với một người có cảm xúc {dominant_emotion}"
-        # advice = chat_call(message)
+        advice = chat_call(message)
         print(dominant_emotion)
         return jsonify({"emotion": dominant_emotion}), 200
 

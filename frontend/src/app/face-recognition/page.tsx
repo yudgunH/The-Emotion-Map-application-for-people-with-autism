@@ -3,46 +3,33 @@
 import React, { useState, useRef } from 'react'
 import axios from 'axios'
 import Webcam from 'react-webcam'
-import { RefreshCw } from 'lucide-react'
 import { Button } from "@/components/ui/button"
+import Chatbox from '@/components/Chatbox'
 
 const BASE_URL = "http://localhost:5005"
 
 export default function EmotionDetector() {
-  const [capturedImage, setCapturedImage] = useState<string | null>(null)
   const [emotion, setEmotion] = useState<string>("neutral")
   const [loading, setLoading] = useState<boolean>(false)
   const [result, setResult] = useState<string>("")
   const [showGauge, setShowGauge] = useState<boolean>(false)
+  const [isChatboxOpen, setIsChatboxOpen] = useState<boolean>(false)
   const webcamRef = useRef<Webcam>(null)
 
-  const handleCapture = () => {
+  const handleCaptureAndAnalyze = async () => {
     const imageSrc = webcamRef.current?.getScreenshot()
-    if (imageSrc) {
-      setCapturedImage(imageSrc)
-      setShowGauge(false)
-    } else {
+    if (!imageSrc) {
       alert("Không thể chụp ảnh. Vui lòng thử lại.")
+      return
     }
-  }
 
-  const handleRetake = () => {
-    setCapturedImage(null)
-    setResult("")
-    setEmotion("neutral")
-    setShowGauge(false)
-  }
-
-  const handleAnalyze = async () => {
-    if (!capturedImage) {
-      return alert("Vui lòng chụp một bức ảnh trước khi phân tích.")
-    }
     setLoading(true)
     try {
       const payload = {
-        img: capturedImage,
+        img: imageSrc,
         detector_backend: "opencv",
       }
+
       const response = await axios.post(`${BASE_URL}/analyze`, payload, {
         headers: {
           "Content-Type": "application/json",
@@ -50,19 +37,17 @@ export default function EmotionDetector() {
       })
 
       console.log("Response data:", response.data)
-      // API trả về một đối tượng JSON chứa emotion và advice
-      if (response.data && typeof response.data === 'object') {
+      if (response.data && typeof response.data === "object") {
         const domEmotion = response.data.emotion.toLowerCase()
         const adviceText = response.data.advice
         setEmotion(domEmotion)
         setShowGauge(true)
-        setResult(adviceText) // Lưu lại lời khuyên từ API
+        setResult(adviceText)
       } else {
         setEmotion("neutral")
         setShowGauge(true)
         setResult("Không xác định cảm xúc.")
       }
-
     } catch (error: any) {
       setResult(`Error: ${error.message}`)
       console.error("Error details:", error)
@@ -102,11 +87,11 @@ export default function EmotionDetector() {
   }
 
   return (
-    <div className="max-w-xl mx-auto p-4 space-y-4">
-      <h1 className="text-xl font-semibold text-center">Kiểm tra cảm xúc</h1>
+    <div className={`flex transition-all duration-300 ease-in-out ${isChatboxOpen ? 'mr-[400px]' : ''}`}>
+      <div className="flex-1 max-w-xl mx-auto p-4 space-y-4">
+        <h1 className="text-xl font-semibold text-center">Kiểm tra cảm xúc</h1>
 
-      <div className="relative aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
-        {!capturedImage ? (
+        <div className="relative aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
           <Webcam
             audio={false}
             ref={webcamRef}
@@ -114,87 +99,76 @@ export default function EmotionDetector() {
             videoConstraints={{
               facingMode: "user",
               width: { ideal: 1280 },
-              height: { ideal: 720 }
+              height: { ideal: 720 },
             }}
             className="w-full h-full object-cover"
           />
-        ) : (
-          <img src={capturedImage} alt="Captured" className="w-full h-full object-cover" />
-        )}
-      </div>
-
-      <div className="flex justify-center space-x-2">
-        {!capturedImage ? (
-          <Button onClick={handleCapture} className="bg-primary hover:bg-primary/90">
-            Chụp Ảnh
-          </Button>
-        ) : (
-          <>
-            <Button
-              onClick={handleAnalyze}
-              disabled={loading}
-              className="bg-green-500 hover:bg-green-600 text-white"
-            >
-              {loading ? "Đang phân tích..." : "Phân Tích Cảm Xúc"}
-            </Button>
-            <Button
-              onClick={handleRetake}
-              disabled={loading}
-              variant="outline"
-              className="bg-gray-100 hover:bg-gray-200"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Chụp Lại
-            </Button>
-          </>
-        )}
-      </div>
-
-      {showGauge && (
-        <div className="flex flex-col items-center space-y-2">
-          <svg width="100" height="60" className="transform -rotate-180">
-            <path
-              d={`M ${50 - radius}, 50 a ${radius},${radius} 0 1,1 ${radius * 2},0`}
-              fill="none"
-              stroke="#e5e7eb"
-              strokeWidth={strokeWidth}
-            />
-            <path
-              d={`M ${50 - radius}, 50 a ${radius},${radius} 0 1,1 ${radius * 2},0`}
-              fill="none"
-              stroke={getColor(emotion)}
-              strokeWidth={strokeWidth}
-              strokeDasharray={circumference}
-              strokeDashoffset={circumference / 2}
-              className="transition-all duration-500"
-            />
-          </svg>
-
-          <div className="text-5xl">
-            {getEmotionInfo(emotion).emoji}
-          </div>
-
-          <div className="text-center space-y-1">
-            <p className="font-medium text-lg">
-              {getEmotionInfo(emotion).text}
-            </p>
-            <p className="text-sm text-gray-600">
-              Cảm ơn bạn đã sử dụng ứng dụng của chúng tôi!
-            </p>
-          </div>
         </div>
-      )}
 
-      <div className="mt-4">
-        <h3 className="text-lg font-semibold mb-2">Lời khuyên chi tiết</h3>
-        {loading ? (
-          <p className="text-center">Đang phân tích...</p>
-        ) : (
-          <pre className="bg-gray-100 p-4 rounded-lg text-sm overflow-x-auto">
-            {result}
-          </pre>
+        <div className="flex justify-center space-x-2">
+          <Button
+            onClick={handleCaptureAndAnalyze}
+            disabled={loading}
+            className="bg-green-500 hover:bg-green-600 text-white"
+          >
+            {loading ? "Đang phân tích..." : "Chụp Ảnh và Phân Tích"}
+          </Button>
+          <Button
+            onClick={() => setIsChatboxOpen(!isChatboxOpen)}
+            variant="outline"
+            className="bg-stone-600 hover:bg-stone-700 text-white"
+          >
+            Hỗ trợ giao tiếp
+          </Button>
+        </div>
+
+        {showGauge && (
+          <div className="flex flex-col items-center space-y-2">
+            <svg width="100" height="60" className="transform -rotate-180">
+              <path
+                d={`M ${50 - radius}, 50 a ${radius},${radius} 0 1,1 ${radius * 2},0`}
+                fill="none"
+                stroke="#e5e7eb"
+                strokeWidth={strokeWidth}
+              />
+              <path
+                d={`M ${50 - radius}, 50 a ${radius},${radius} 0 1,1 ${radius * 2},0`}
+                fill="none"
+                stroke={getColor(emotion)}
+                strokeWidth={strokeWidth}
+                strokeDasharray={circumference}
+                strokeDashoffset={circumference / 2}
+                className="transition-all duration-500"
+              />
+            </svg>
+
+            <div className="text-5xl">
+              {getEmotionInfo(emotion).emoji}
+            </div>
+
+            <div className="text-center space-y-1">
+              <p className="font-medium text-lg">
+                {getEmotionInfo(emotion).text}
+              </p>
+              <p className="text-sm text-gray-600">
+                Cảm ơn bạn đã sử dụng ứng dụng của chúng tôi!
+              </p>
+            </div>
+          </div>
         )}
+
+        <div className="mt-4">
+          <h3 className="text-lg font-semibold mb-2">Lời khuyên chi tiết</h3>
+          {loading ? (
+            <p className="text-center">Đang phân tích...</p>
+          ) : (
+            <pre className="bg-gray-100 p-4 rounded-lg text-sm overflow-x-auto">
+              {result}
+            </pre>
+          )}
+        </div>
       </div>
+      <Chatbox isOpen={isChatboxOpen} />
     </div>
   )
 }
