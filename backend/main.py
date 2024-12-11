@@ -92,32 +92,45 @@ def analyze():
     
 
 
-# Socket event để xử lý nhận dạng giọng nói
+listening = True
+
+# Socket event để bắt đầu nhận dạng giọng nói
 @socketio.on('start_recognition')
 def handle_start_recognition():
-    while True:
+    global listening
+    listening = True  # Đặt trạng thái là đang lắng nghe
+    
+    while listening:
         try:
             with sr.Microphone() as source:
                 print("Listening...")
                 # Điều chỉnh ngưỡng năng lượng để phát hiện âm thanh
                 recognizer.energy_threshold = 300  # Tùy chỉnh ngưỡng phù hợp với môi trường
-                recognizer.pause_threshold = 1  # Khoảng thời gian phát hiện dừng nói (mặc định là 0.8 giây)
+                recognizer.pause_threshold = 1  # Khoảng thời gian phát hiện dừng nói
                 
                 # Lắng nghe và ghi nhận âm thanh
                 audio = recognizer.listen(source, timeout=None)
-
-                # Thêm thời gian chờ sau khi người dùng dừng nói
-               # time.sleep(5)  # Chờ thêm 5 giây trước khi ngắt microphone
 
             text = recognizer.recognize_google(audio, language="vi-VN")
             print(text)
             emit('recognized_text', {'text': text})
         except sr.UnknownValueError:
-            print("Ko hieeur")
+            print("Không hiểu được giọng nói.")
             emit('recognized_text', {'text': "Sorry, I could not understand the audio."})
         except sr.RequestError as e:
+            print(f"Lỗi dịch vụ nhận dạng: {e}")
             emit('recognized_text', {'text': f"Recognition service error: {e}"})
+        except Exception as e:
+            print(f"Lỗi không xác định: {e}")
+            emit('recognized_text', {'text': f"An unexpected error occurred: {str(e)}"})
 
+# Socket event để dừng nhận dạng giọng nói
+@socketio.on('stop_recognition')
+def handle_stop_recognition():
+    global listening
+    listening = False  # Thay đổi trạng thái để dừng vòng lặp
+    print("Stopped listening.")
+    emit('recognition_stopped', {'message': "Recognition has been stopped."})
 
 
 conversations = {}
