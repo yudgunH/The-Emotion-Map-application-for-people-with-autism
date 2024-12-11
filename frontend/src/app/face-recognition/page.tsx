@@ -6,6 +6,7 @@ import Webcam from 'react-webcam'
 import { Button } from "@/components/ui/button"
 import { CameraIcon, FlipVerticalIcon as FlipCameraIcon } from 'lucide-react'
 import Chatbox from '@/components/Chatbox'
+import { InstructionsDialog } from '@/components/InstructionsDialog'
 
 const BASE_URL = "http://localhost:5005"
 
@@ -15,6 +16,7 @@ export default function EmotionDetector() {
   const [result, setResult] = useState<string>("")
   const [showGauge, setShowGauge] = useState<boolean>(false)
   const [isChatboxOpen, setIsChatboxOpen] = useState<boolean>(false)
+  const [isInstructionsOpen, setIsInstructionsOpen] = useState<boolean>(false)
   const [facingMode, setFacingMode] = useState<"user" | "environment">("user")
   const webcamRef = useRef<Webcam>(null)
 
@@ -90,6 +92,13 @@ export default function EmotionDetector() {
     }
   }
 
+  const handleSupportClick = () => {
+    if (!isChatboxOpen) {
+      setIsInstructionsOpen(true)
+    }
+    setIsChatboxOpen(!isChatboxOpen)
+  }
+
   return (
     <div className={`flex transition-all duration-300 ease-in-out ${isChatboxOpen ? 'mr-[400px]' : ''}`}>
       <div className="flex-1 max-w-xl mx-auto p-4 space-y-4">
@@ -132,7 +141,7 @@ export default function EmotionDetector() {
             )}
           </Button>
           <Button
-            onClick={() => setIsChatboxOpen(!isChatboxOpen)}
+            onClick={handleSupportClick}
             variant="outline"
             className="bg-stone-600 hover:bg-stone-700 text-white"
           >
@@ -166,6 +175,7 @@ export default function EmotionDetector() {
         </div>
       </div>
       <Chatbox isOpen={isChatboxOpen} />
+      <InstructionsDialog isOpen={isInstructionsOpen} onClose={() => setIsInstructionsOpen(false)} />
     </div>
   )
 }
