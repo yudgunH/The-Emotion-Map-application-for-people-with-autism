@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import React, { useState, useRef, useEffect } from 'react'
 import { Send, Mic, MicOff } from 'lucide-react'
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import axios from 'axios'
+import { io, Socket } from "socket.io-client"
 
 interface Message {
   id: number;
@@ -23,7 +24,8 @@ export default function Chatbox({ isOpen }: ChatboxProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
-  
+  const socketRef = useRef<Socket | null>(null)
+
   const userId = 1;
 
   useEffect(() => {
@@ -86,52 +88,63 @@ export default function Chatbox({ isOpen }: ChatboxProps) {
 
   const toggleListening = () => {
     if (!isListening) {
-      const botMessage: Message = {
-        id: Date.now(),
-        text: "Bắt đầu lắng nghe cuộc trò chuyện",
-        sender: 'bot',
-      };
-      setMessages(prevMessages => [...prevMessages, botMessage]);
+      // Kết nối socket khi bắt đầu lắng nghe
       startListening();
     } else {
       stopListening();
     }
   };
   
-
   const startListening = () => {
     setIsListening(true);
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'vi-VN';
-    recognition.continuous = true;
-    recognition.interimResults = true;
 
-    recognition.onresult = (event) => {
-      const transcript = Array.from(event.results)
-        .map(result => result[0])
-        .map(result => result.transcript)
-        .join('');
-      setInputMessage(transcript);
+    // Khởi tạo socket nếu chưa
+    if (!socketRef.current) {
+      const socket = io("http://localhost:5005", {
+        transports: ["websocket"]
+      });
+      socketRef.current = socket;
+      
+      // Lắng nghe event recognized_text từ server
+      socket.on('recognized_text', (data: {text: string}) => {
+        // Cập nhật inputMessage với văn bản nhận được từ server
+        setInputMessage(data.text);
+      });
+
+      socket.on('connect', () => {
+        console.log('Đã kết nối tới server SocketIO');
+      });
+
+      socket.on('disconnect', () => {
+        console.log('Mất kết nối tới server SocketIO');
+      });
+    }
+
+    // Gửi event start_recognition tới server
+    socketRef.current?.emit('start_recognition');
+
+    const botMessage: Message = {
+      id: Date.now(),
+      text: "Bắt đầu lắng nghe cuộc trò chuyện",
+      sender: 'bot',
     };
-
-    recognition.onerror = (event) => {
-      console.error('Speech recognition error', event.error);
-      setIsListening(false);
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognition.start();
+    setMessages(prevMessages => [...prevMessages, botMessage]);
   }
 
   const stopListening = () => {
     setIsListening(false);
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.stop();
+    // Ngắt kết nối socket hoặc lắng nghe
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
+    }
+
+    const botMessage: Message = {
+      id: Date.now(),
+      text: "Dừng lắng nghe cuộc trò chuyện",
+      sender: 'bot',
+    };
+    setMessages(prevMessages => [...prevMessages, botMessage]);
   }
 
   return (
@@ -214,4 +227,3 @@ export default function Chatbox({ isOpen }: ChatboxProps) {
     </div>
   )
 }
-
