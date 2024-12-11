@@ -6,6 +6,7 @@ import Webcam from 'react-webcam'
 import { Button } from "@/components/ui/button"
 import { CameraIcon, FlipVerticalIcon as FlipCameraIcon } from 'lucide-react'
 import Chatbox from '@/components/Chatbox'
+
 const BASE_URL = "http://localhost:5005"
 
 export default function EmotionDetector() {
@@ -62,10 +63,6 @@ export default function EmotionDetector() {
       prevState === "user" ? "environment" : "user"
     )
   }, [])
-
-  const radius = 40
-  const strokeWidth = 8
-  const circumference = 2 * Math.PI * radius
 
   const getColor = (emotion: string) => {
     switch (emotion) {
@@ -145,24 +142,6 @@ export default function EmotionDetector() {
 
         {showGauge && (
           <div className="flex flex-col items-center space-y-2">
-            <svg width="100" height="60" className="transform -rotate-180">
-              <path
-                d={`M ${50 - radius}, 50 a ${radius},${radius} 0 1,1 ${radius * 2},0`}
-                fill="none"
-                stroke="#e5e7eb"
-                strokeWidth={strokeWidth}
-              />
-              <path
-                d={`M ${50 - radius}, 50 a ${radius},${radius} 0 1,1 ${radius * 2},0`}
-                fill="none"
-                stroke={getColor(emotion)}
-                strokeWidth={strokeWidth}
-                strokeDasharray={circumference}
-                strokeDashoffset={circumference / 2}
-                className="transition-all duration-500"
-              />
-            </svg>
-
             <div className="text-5xl">
               {getEmotionInfo(emotion).emoji}
             </div>
@@ -170,9 +149,6 @@ export default function EmotionDetector() {
             <div className="text-center space-y-1">
               <p className="font-medium text-lg">
                 {getEmotionInfo(emotion).text}
-              </p>
-              <p className="text-sm text-gray-600">
-                Cảm ơn bạn đã sử dụng ứng dụng của chúng tôi!
               </p>
             </div>
           </div>
@@ -183,9 +159,9 @@ export default function EmotionDetector() {
           {loading ? (
             <p className="text-center">Đang phân tích...</p>
           ) : (
-            <pre className="bg-gray-100 p-4 rounded-lg text-sm overflow-x-auto">
-              {result}
-            </pre>
+            <div className="bg-gray-100 p-4 rounded-lg text-sm overflow-x-auto">
+              <p className="whitespace-pre-wrap">{result}</p>
+            </div>
           )}
         </div>
       </div>
