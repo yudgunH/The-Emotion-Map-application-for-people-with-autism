@@ -33,7 +33,7 @@ def chat_call(message):
     }
 
     response = openai.ChatCompletion.create(
-        model="gpt-4o",  # Choose the GPT model
+        model="gpt-3.5-turbo",  # Choose the GPT model
         messages=[
             system_message,  # Thêm system vào đầu hội thoại
             {"role": "user", "content": message}
@@ -116,13 +116,16 @@ def handle_start_recognition():
             emit('recognized_text', {'text': text})
         except sr.UnknownValueError:
             print("Không hiểu được giọng nói.")
-            emit('recognized_text', {'text': "Sorry, I could not understand the audio."})
+            emit('recognized_text', {'text': ""})
         except sr.RequestError as e:
             print(f"Lỗi dịch vụ nhận dạng: {e}")
             emit('recognized_text', {'text': f"Recognition service error: {e}"})
+            break
         except Exception as e:
             print(f"Lỗi không xác định: {e}")
             emit('recognized_text', {'text': f"An unexpected error occurred: {str(e)}"})
+            break
+        
 
 # Socket event để dừng nhận dạng giọng nói
 @socketio.on('stop_recognition')

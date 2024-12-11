@@ -25,6 +25,7 @@ export default function Chatbox({ isOpen }: ChatboxProps) {
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [listeningResults, setListeningResults] = useState<string[]>([]); // Biến lưu kết quả
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [socket, setSocket] = useState<MySocket | null>(null);
 
@@ -48,44 +49,40 @@ export default function Chatbox({ isOpen }: ChatboxProps) {
   }, [isOpen, messages]);
 
   useEffect(() => {
-    // Kết nối tới server socket.io
     const newSocket = io("http://localhost:5005");
     setSocket(newSocket);
 
-    // Lắng nghe sự kiện recognized_text từ server
     newSocket.on("recognized_text", (data: { text: string }) => {
-      setInputMessage(data.text);
+      setListeningResults((prev) => [...prev, data.text]); // Lưu vào mảng kết quả
+      setInputMessage((prev) => `${prev} ${data.text}`.trim()); // Cập nhật giá trị Input
     });
 
-    // Xử lý kết nối và ngắt kết nối
     newSocket.on("connect", () => console.log("Đã kết nối tới server SocketIO"));
     newSocket.on("disconnect", () =>
       console.log("Mất kết nối tới server SocketIO")
     );
 
-    // Dọn dẹp socket khi component unmount
     return () => {
       newSocket.disconnect();
     };
   }, []);
 
-  const handleSendMessage = async () => {
-    if (inputMessage.trim() === "") return;
+  const handleSendMessage = async (message: string) => {
+    if (message.trim() === "") return;
 
     const userMessage: Message = {
       id: Date.now(),
-      text: inputMessage,
+      text: message,
       sender: "user",
     };
 
     setMessages((prevMessages) => [...prevMessages, userMessage]);
-    setInputMessage("");
     setIsLoading(true);
 
     try {
       const response = await axios.post("http://localhost:5005/chatbox", {
         user_id: userId,
-        message: inputMessage,
+        message: message,
       });
 
       const { reply } = response.data;
@@ -120,6 +117,8 @@ export default function Chatbox({ isOpen }: ChatboxProps) {
 
   const startListening = () => {
     setIsListening(true);
+    setListeningResults([]); // Xóa danh sách kết quả cũ
+    setInputMessage(""); // Xóa inputMessage cũ
     if (socket) {
       socket.emit("start_recognition");
     }
@@ -137,7 +136,7 @@ export default function Chatbox({ isOpen }: ChatboxProps) {
     if (socket) {
       socket.emit("stop_recognition");
     }
-
+  
     const botMessage: Message = {
       id: Date.now(),
       text: "Dừng lắng nghe cuộc trò chuyện",
@@ -145,6 +144,7 @@ export default function Chatbox({ isOpen }: ChatboxProps) {
     };
     setMessages((prevMessages) => [...prevMessages, botMessage]);
   };
+  
 
   return (
     <div
@@ -191,7 +191,7 @@ export default function Chatbox({ isOpen }: ChatboxProps) {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              handleSendMessage();
+              handleSendMessage(inputMessage);
             }}
             className="flex gap-2"
           >
