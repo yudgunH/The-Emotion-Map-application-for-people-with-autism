@@ -1,11 +1,11 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { Send } from 'lucide-react'
+import { Send, Mic, MicOff } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import axios from 'axios' // Import axios
+import axios from 'axios'
 
 interface Message {
   id: number;
@@ -20,10 +20,10 @@ interface ChatboxProps {
 export default function Chatbox({ isOpen }: ChatboxProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [inputMessage, setInputMessage] = useState('')
-  const [isLoading, setIsLoading] = useState(false) // Trạng thái tải
+  const [isLoading, setIsLoading] = useState(false)
+  const [isListening, setIsListening] = useState(false)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
-
-  // Đặt userId cố định là 1
+  
   const userId = 1;
 
   useEffect(() => {
@@ -31,6 +31,17 @@ export default function Chatbox({ isOpen }: ChatboxProps) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight
     }
   }, [messages])
+
+  useEffect(() => {
+    if (isOpen && messages.length === 0) {
+      const initialBotMessage: Message = {
+        id: Date.now(),
+        text: "Xin chào Phan Hưng, bạn cần tôi hỗ trợ gì?",
+        sender: 'bot'
+      }
+      setMessages([initialBotMessage])
+    }
+  }, [isOpen, messages])
 
   const handleSendMessage = async () => {
     if (inputMessage.trim() === '') return
@@ -40,12 +51,12 @@ export default function Chatbox({ isOpen }: ChatboxProps) {
       text: inputMessage,
       sender: 'user'
     }
+
     setMessages(prevMessages => [...prevMessages, userMessage])
     setInputMessage('')
-    setIsLoading(true) // Bắt đầu tải
+    setIsLoading(true)
 
     try {
-      // Gửi yêu cầu đến API backend
       const response = await axios.post('http://localhost:5005/chatbox', {
         user_id: userId,
         message: inputMessage
@@ -69,8 +80,58 @@ export default function Chatbox({ isOpen }: ChatboxProps) {
       }
       setMessages(prevMessages => [...prevMessages, errorMessage])
     } finally {
-      setIsLoading(false) // Kết thúc tải
+      setIsLoading(false)
     }
+  }
+
+  const toggleListening = () => {
+    if (!isListening) {
+      const botMessage: Message = {
+        id: Date.now(),
+        text: "Bắt đầu lắng nghe cuộc trò chuyện",
+        sender: 'bot',
+      };
+      setMessages(prevMessages => [...prevMessages, botMessage]);
+      startListening();
+    } else {
+      stopListening();
+    }
+  };
+  
+
+  const startListening = () => {
+    setIsListening(true);
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'vi-VN';
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map(result => result[0])
+        .map(result => result.transcript)
+        .join('');
+      setInputMessage(transcript);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error', event.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
+  }
+
+  const stopListening = () => {
+    setIsListening(false);
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.stop();
   }
 
   return (
@@ -128,13 +189,22 @@ export default function Chatbox({ isOpen }: ChatboxProps) {
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               className="flex-grow bg-stone-700 border-stone-500 text-white placeholder:text-stone-400"
-              disabled={isLoading} // Vô hiệu hóa khi đang tải
+              disabled={isLoading}
             />
+            <Button 
+              type="button" 
+              size="icon"
+              className="bg-stone-700 hover:bg-stone-800 text-white"
+              onClick={toggleListening}
+              disabled={isLoading}
+            >
+              {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            </Button>
             <Button 
               type="submit" 
               size="icon"
               className="bg-stone-700 hover:bg-stone-800 text-white"
-              disabled={isLoading} // Vô hiệu hóa khi đang tải
+              disabled={isLoading}
             >
               <Send className="h-4 w-4" />
             </Button>
@@ -144,3 +214,4 @@ export default function Chatbox({ isOpen }: ChatboxProps) {
     </div>
   )
 }
+
