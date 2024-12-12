@@ -67,24 +67,33 @@ export default function Chatbox({ isOpen }: ChatboxProps) {
   }, []);
 
   const handleSendMessage = async () => {
-    const combinedMessage = `${inputMessage.trim()} ${listeningResults.join(" ")}`.trim();
-    if (combinedMessage === "") return;
-
+    // Tạo phiên bản hiển thị cho giao diện
+    const displayMessage = `${inputMessage.trim()} ${listeningResults.join(" ")}`.trim();
+  
+    // Tạo phiên bản đầy đủ để gửi đến server
+    const additionalText = "\n\n- Đây là cuộc trò chuyện của tôi, tôi nên nói gì tiếp theo";
+    const serverMessage = listeningResults.length > 0
+      ? `${displayMessage}${additionalText}`.trim()
+      : displayMessage;
+  
+    if (displayMessage === "") return;
+  
+    // Tin nhắn hiển thị
     const userMessage: Message = {
       id: Date.now(),
-      text: combinedMessage,
+      text: displayMessage,
       sender: "user",
     };
-
+  
     setMessages((prevMessages) => [...prevMessages, userMessage]);
     setInputMessage("");
     setListeningResults([]);
     setIsLoading(true);
-
+  
     try {
       const response = await axios.post("http://localhost:5005/chatbox", {
         user_id: userId,
-        message: combinedMessage,
+        message: serverMessage,
         recognition_results: listeningResults,
         conversation_history: messages.map((msg) => ({
           text: msg.text,
@@ -92,17 +101,17 @@ export default function Chatbox({ isOpen }: ChatboxProps) {
         })),
         system_prompt: "Bạn là một trợ lý gợi ý câu trả lời trong các cuộc trò chuyện cho người tự kỷ. Bạn cần tập trung vào việc cung cấp những câu trả lời tự nhiên, thân thiện và dễ hiểu.",
       });
-
+  
       const { reply, suggestions } = response.data;
-
+  
       const botMessage: Message = {
         id: Date.now() + 1,
         text: reply,
         sender: "bot",
       };
-
+  
       setMessages((prevMessages) => [...prevMessages, botMessage]);
-
+  
       if (suggestions) {
         const suggestionMessages: Message[] = suggestions.map((suggestion: string) => ({
           id: Date.now() + Math.random(),
@@ -123,6 +132,7 @@ export default function Chatbox({ isOpen }: ChatboxProps) {
       setIsLoading(false);
     }
   };
+  
 
   const toggleListening = () => {
     if (!isListening) {

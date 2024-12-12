@@ -14,7 +14,7 @@ const Header = () => {
   const navItems = [
     { href: '/', label: 'Trang chủ' },
     { href: '/face-recognition', label: 'Kiểm tra cảm xúc' },
-    { href: '/development', label: 'Theo dõi và phát triển' },
+    { href: '/development', label: 'Nhật ký cảm xúc' },
     { href: '/guidance', label: 'Hướng dẫn can thiệp' },
   ]
 

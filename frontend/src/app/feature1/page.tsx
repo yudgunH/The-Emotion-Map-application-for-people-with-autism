@@ -11,8 +11,8 @@ export default function Page() {
 
   const menuItems = [
     "Tự kỷ là gì",
-    "Theo dõi và sáng lọc phát triển là gì",
-    "Vì sao theo dõi và sáng lọc phát triển lại quan trọng",
+    "Theo dõi và sàng lọc phát triển là gì",
+    "Vì sao theo dõi và sàng lọc phát triển lại quan trọng",
     "Chậm phát triển là gì",
     "Quản lý cảm xúc quan trọng như thế nào đối với người tự kỷ",
   ]

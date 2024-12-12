@@ -39,7 +39,7 @@ export default function Page() {
           <InfoCard
             title="Kết nối cộng đồng"
             description="EmoCare giúp bạn kết nối với cộng đồng cha mẹ khắp cả nước, chia sẻ kinh nghiệm và học hỏi từ những người khác."
-            link="/info3"
+            link="https://www.facebook.com/share/g/15UzqW3Aie/"
             color="bg-blue-500"
           />
         </div>

@@ -33,7 +33,7 @@ def chat_call(message):
     }
 
     response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",  # Choose the GPT model
+        model="gpt-4o",  # Choose the GPT model
         messages=[
             system_message,  # Thêm system vào đầu hội thoại
             {"role": "user", "content": message}
@@ -82,7 +82,7 @@ def analyze():
             anti_spoofing=input_args.get("anti_spoofing", False),
         )
         dominant_emotion = demographies[0]['dominant_emotion']
-        message = f"Người dùng đang giao tiếp với một người có cảm xúc {dominant_emotion}"
+        message = f"Người dùng đang có cảm xúc {dominant_emotion}"
         advice = chat_call(message)
         print(dominant_emotion)
         return jsonify({"emotion": dominant_emotion, "advice": advice}), 200
@@ -154,7 +154,7 @@ def chatbox():
         conversations[user_id].append({"role": "user", "content": user_message})
 
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o",
             messages=conversations[user_id]
         )
         
