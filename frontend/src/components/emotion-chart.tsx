@@ -3,12 +3,12 @@
 import { Line, LineChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from "recharts"
 
 const data = [
-  { date: "10/06/2024", value1: 30, value2: 10, value3: 35 },
-  { date: "11/06/2024", value1: 70, value2: 30, value3: 40 },
-  { date: "12/06/2024", value1: 65, value2: 65, value3: 20 },
-  { date: "13/06/2024", value1: 60, value2: 60, value3: 15 },
-  { date: "14/06/2024", value1: 20, value2: 40, value3: 10 },
-  { date: "15/06/2024", value1: 10, value2: 20, value3: 5 },
+  { date: "10/06/2024", tiêu_cực: 30, tích_cực: 10, bình_thường: 35 },
+  { date: "11/06/2024", tiêu_cực: 70, tích_cực: 30, bình_thường: 40 },
+  { date: "12/06/2024", tiêu_cực: 65, tích_cực: 65, bình_thường: 20 },
+  { date: "13/06/2024", tiêu_cực: 60, tích_cực: 60, bình_thường: 15 },
+  { date: "14/06/2024", tiêu_cực: 20, tích_cực: 40, bình_thường: 10 },
+  { date: "15/06/2024", tiêu_cực: 10, tích_cực: 20, bình_thường: 5 },
 ]
 
 export function EmotionChart() {
@@ -21,12 +21,11 @@ export function EmotionChart() {
           <YAxis domain={[0, 100]} />
           <Tooltip />
           <Legend />
-          <Line type="monotone" dataKey="value1" stroke="#8884d8" />
-          <Line type="monotone" dataKey="value2" stroke="#82ca9d" />
-          <Line type="monotone" dataKey="value3" stroke="#ffc658" />
+          <Line type="monotone" dataKey="tiêu_cực" stroke="#8884d8" />
+          <Line type="monotone" dataKey="tích_cực" stroke="#82ca9d" />
+          <Line type="monotone" dataKey="bình_thường" stroke="#ffc658" />
         </LineChart>
       </ResponsiveContainer>
     </div>
   )
 }
-

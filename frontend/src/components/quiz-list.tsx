@@ -50,11 +50,11 @@ import {
   export function QuizList() {
     return (
       <div className="w-full p-4 border rounded-lg bg-white mt-4">
-        <h2 className="text-xl font-semibold mb-4">Quản lý Cảm xúc - Danh sách Quiz</h2>
+        <h2 className="text-xl font-semibold mb-4">Quản lý Cảm xúc</h2>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Tên Quiz</TableHead>
+              <TableHead>Tên</TableHead>
               <TableHead>Điểm số</TableHead>
               <TableHead>Đánh giá cảm xúc</TableHead>
               <TableHead>Thời gian làm bài</TableHead>

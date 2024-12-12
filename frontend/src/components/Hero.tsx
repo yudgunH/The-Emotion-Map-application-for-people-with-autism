@@ -10,7 +10,7 @@ export default function Page() {
       {/* Hero Section */}
       <div className="relative h-[400px] overflow-hidden rounded-custom w-full">
         <Image
-          src="/hero_img.png"
+          src="/hero_img.jpg"
           alt="Hero image of child playing"
           width={1200}
           height={400}
